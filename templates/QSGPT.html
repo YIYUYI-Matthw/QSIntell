@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>企业智能问答</title>
+    <!--<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css">-->
+    <!--vue 2.x-->
+    <script src="/static/resource/js/cdn.bootcdn.net_ajax_libs_vue_2.7.14_vue.js"></script>
+    <!--element-ui-->
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/static/resource/css/element-ui_index.css">
+    <!-- 引入组件库 -->
+    <script src="/static/resource/js/element-ui_index.js"></script>
+    <!--引入axios-->
+    <script src="/static/resource/js/axios.min.js"></script>
+</head>
+<style>
+    /*element-ui字体配置*/
+    @font-face {
+        font-family: element-icons;
+        src: url(/static/resource/fonts/element-icons.woff) format('woff'), url(/static/resource/tff/element-icons.ttf) format('truetype');
+        font-weight: 400;
+        font-style: normal;
+    }
+</style>
+<!--粗粒度布局-->
+<style>
+    html {
+        height: 100vh;
+        width: 100vw;
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+        border: 0;
+    }
+
+    body {
+        height: 100vh;
+        width: 100vw;
+        box-sizing: border-box;
+        padding: 0.1%;
+        margin: 0;
+    }
+
+    #root {
+        height: 100%;
+        width: 100%;
+        border-radius: 20px;
+        box-sizing: border-box;
+        /*子元素*/
+        display: flex;
+    }
+
+    #chatBlock {
+        width: 66%;
+        height: 100%;
+    }
+
+    #detailsBlock {
+        width: 33%;
+        height: 100%;
+        z-index: 999;
+    }
+</style>
+<!--聊天框-->
+<style>
+    #chatBlock {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #modelSelector {
+        position: absolute;
+        box-sizing: border-box;
+        height: 6%;
+        width: 66%;
+        opacity: 0.95;
+        background-color: #ffffff;
+        /*子元素*/
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    #modelOpt {
+        font-size: 15px;
+        font-weight: bold;
+        text-align: left;
+        padding-left: 10px;
+        width: 140px;
+        height: 40px;
+        margin-left: 20px;
+        border-radius: 10px;
+        border: 0;
+        user-select: none;
+        /*子元素*/
+        display: flex;
+        align-items: center;
+    }
+
+    #modelOptions {
+        margin-top: 20px;
+        margin-left: 20px;
+        width: 140px;
+        border-radius: 5px;
+        border: 1px solid #d3d3d3;
+        /*子元素*/
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        user-select: none;
+    }
+
+    #modelOptions > .option {
+        font-size: 15px;
+        font-weight: bold;
+        text-align: left;
+        padding-left: 10px;
+        box-sizing: border-box;
+        height: 40px;
+        border: 0;
+        /*子元素*/
+        display: flex;
+        align-items: center;
+    }
+
+    #modelOpt:hover, #modelOptions > .option:hover {
+        background-color: #e1e1e1;
+        cursor: pointer;
+    }
+
+    /*chatArea*/
+    #chatArea {
+        flex: 1;
+        overflow-y: auto;
+        padding-top: 5%;
+    }
+
+    /*queryArea*/
+    #queryArea {
+        height: 10%;
+        width: 80%;
+        margin-left: 20%;
+        /*子元素*/
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    #chatHistory {
+        width: 60%;
+        margin-left: 20%;
+    }
+
+    #inputBlock {
+        width: 80%;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        border-radius: 10px;
+        border: 1px solid #797979;
+        padding: 5px;
+        /*子元素*/
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #inputArea {
+        border: 0;
+        background-color: rgba(0, 0, 0, 0);
+        font-size: 18px;
+        color: black;
+    }
+
+    #sendBtn {
+        background-color: #ececec;
+        border: 0;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        /*子元素*/
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #sendBtn:hover {
+        background-color: black;
+        cursor: pointer;
+    }
+
+    #sendBtn_waiting {
+        background-color: black;
+        border: 0;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        /*子元素*/
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #sendBtn_waiting:hover {
+        cursor: pointer;
+    }
+
+    .el-message--info {
+        background-color: #f8f8f8;
+    }
+
+    .el-message--success {
+        background-color: #f9fff8;
+    }
+
+    .custom-message {
+        left: 33%;
+    }
+</style>
+<!--详情页-->
+<style>
+    #detailsBlock {
+        border-left: 2px solid rgba(240, 240, 240, 0.36);
+        color: #000000;
+        background: linear-gradient(to bottom, #e4f1fa 25%, #f9f9f9 75%);
+        /*子元素*/
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #detailsHead {
+        box-sizing: border-box;
+        height: 6%;
+        width: 100%;
+        user-select: none;
+        background: #ffffff;
+        /*子元素*/
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-left: 10px;
+    }
+
+    #details_head_content {
+        width: 90%;
+        padding-left: 10px;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .collapse_item_head {
+        user-select: none;
+    }
+
+    #detailsList {
+        /*border-top: #939393 1px solid;*/
+        width: 90%;
+        height: 94%;
+        overflow-y: auto;
+        padding: 10px;
+        /*子元素设置*/
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+
+    .collapse_item_block {
+        width: 98%;
+        border-radius: 5px;
+    }
+
+    .collapse_item_block > .collapse_item_head {
+        padding: 5px;
+        border-radius: 5px;
+        /*border: 1px solid #000000;*/
+        margin-bottom: 10px;
+        /*子元素*/
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .collapse_item_block > .collapse_item_head > .collapse_item_head_content {
+        margin: 5px;
+    }
+
+    .collapse_item_block > .collapse_item_head:hover {
+        background-color: rgb(205, 236, 255);
+        cursor: pointer;
+    }
+
+    .collapse_item_block > .collapse_item_body {
+        margin: 5px;
+        padding: 5px;
+    }
+
+</style>
+<!--对话筐体——客服-->
+<style>
+    .keyword {
+        border-radius: 5px;
+        border: 1px solid rgb(176, 176, 176);
+        padding: 4px;
+        background: #ffffff;
+        color: #3f9ffc;
+    }
+
+    .chat_left {
+        width: 100%;
+        margin-top: 20px;
+        /*子元素*/
+        display: flex;
+        justify-content: left;
+    }
+
+    .chat_avatar {
+        width: 50px;
+        height: 50px;
+        background-color: #4459AB;
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        text-align: center;
+        line-height: 50px;
+        color: white;
+        border-radius: 25px;
+        /*用户不可选*/
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-drag: none;
+    }
+
+    .chat_left_item_1 {
+        width: 50px;
+        height: 50px;
+        background-color: #4459AB;
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        text-align: center;
+        line-height: 50px;
+        color: white;
+        border-radius: 25px;
+    }
+
+    .chat_left_item_2 {
+        width: 75%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .divider {
+        border-top: 1px solid #b4b4b4; /* 使用1像素的实线作为分割线，可以根据需要修改颜色和粗细 */
+        margin-top: 5px; /* 如果需要一些间距，可以使用 margin-top 调整 */
+        margin-bottom: 5px; /* 如果需要一些间距，可以使用 margin-top 调整 */
+    }
+
+    .chat_left_item_2 .chat_left_content {
+        padding: 15px;
+        margin-top: 10px;
+        background-color: rgb(255, 255, 255);
+        display: inline-block;
+        border-radius: 10px;
+        border-top-left-radius: 0px;
+        text-align: justify;
+        border: 1px solid #c9c9c9;
+    }
+
+    .doc_list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    .doc_list > li {
+        color: #3f9ffc;
+    }
+
+    .doc_list > li > a {
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+</style>
+<!--对话筐体——用户-->
+<style>
+    .chat_right {
+        width: 100%;
+        margin-top: 10px;
+        /*子元素*/
+        display: flex;
+        justify-content: right;
+    }
+
+    .chat_right_item_2 {
+        width: 75%;
+        margin-top: 10px;
+        margin-right: 10px;
+    }
+
+    .chat_right_time {
+        width: 100%;
+        text-align: right;
+    }
+
+    .chat_time {
+        user-select: none;
+        color: #797979;
+    }
+
+    .chat_right_content {
+        float: right;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 10px;
+        border-top-right-radius: 0px;
+        background-color: #ffffff;
+        border: 1px solid #c9c9c9;
+        color: #000000;
+        text-align: justify;
+    }
+</style>
+<!--滚动条样式-->
+<style>
+    /*滚动条样式*/
+    /* 滚动条整体 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    /* 两个滚动条交接处 -- x轴和y轴 */
+    ::-webkit-scrollbar-corner {
+        background-color: transparent;
+    }
+
+    /* 滚动条滑块 */
+    ::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        -webkit-box-shadow: inset 0 0 5px rgba(222, 222, 222, 0.2);
+        background: #dedede;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #9d9d9d;
+    }
+
+    /* 滚动条轨道 */
+    ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0);
+    {#border-radius: 5px;#} background: #ededed;
+    }
+
+    /* 滚动条两端按钮 */
+    ::-webkit-scrollbar-button {
+        width: 0;
+        height: 0;
+        display: none;
+    }
+
+</style>
+<body>
+<div id="root">
+    <div id="chatBlock">
+        <div id="modelSelector">
+            <div>
+                <div id="modelOpt" @click="showOpt">
+                    <div>
+                        {[ modelSelected ]}
+                        <i v-if="showModels" class="el-icon-arrow-up el-icon--right"></i>
+                        <i v-else class="el-icon-arrow-down el-icon--right"></i>
+                    </div>
+                </div>
+                <div id="modelOptions" v-if="showModels">
+                    <div class="option" @click="selectModel('ChatGPT 3.5')">
+                        <p>ChatGPT 3.5</p>
+                    </div>
+                    <div class="option" @click="selectModel('Spark')">
+                        <!--style="border-top: 1px solid #d5d5d5;border-bottom: 1px solid #d5d5d5">-->
+                        <p>Spark</p>
+                    </div>
+                    <div class="option" @click="selectModel('ChatGLM')">
+                        <!--style="border-top: 1px solid #d5d5d5;border-bottom: 1px solid #d5d5d5">-->
+                        <p>ChatGLM</p>
+                    </div>
+                    <div class="option" @click="selectModel('Baichuan')">
+                        <p>Baichuan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chatArea">
+            <div id="chatHistory">
+                <!-- 用户 -->
+                <div class="chat_right">
+                    <div class="chat_right_item_2 ">
+                        <div class="chat_right_time chat_time">18:59</div>
+                        <div class="chat_right_content">
+                            我部门想采购办公用器，是什么流程?
+                        </div>
+                    </div>
+                    <img class="chat_avatar" src="/static/resource/pics/user.jpg">
+                </div>
+                <!--客服 -->
+                <div class="chat_left clearfix">
+                    <img class="chat_avatar" src="/static/resource/pics/machine.png">
+                    <div class="chat_left_item_2">
+                        <div class="chat_time">18:57</div>
+                        <div class="chat_left_content">
+                            你好，根据《北京北控毫光大数据服的有限公司办公局及管理力法（动行）》相关内容，办公用品采购应于每月20-25日《办公用品采购需求》。经由负责人审批后上报的办公用品采购表，最终由采购部门执行。
+                            <ul class="doc_list">
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                            </ul>
+                            <div class="divider"></div>
+                            <div style="display: flex; justify-content: space-between">
+                                <div class="keyword">关键字1</div>
+                                <div class="keyword">关键字2</div>
+                                <div class="keyword">关键字3</div>
+                                <div class="keyword">关键字4</div>
+                                <div class="keyword">关键字5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="queryArea">
+            <div id="inputBlock">
+                <el-input id="inputArea" type="textarea" :resize="resize"
+                          :autosize="{ minRows: 1, maxRows: 7}"
+                          placeholder="请输入内容"
+                          v-model="queryStr">
+                </el-input>
+                <el-button v-if="waiting_ans" id="sendBtn_waiting" @click='stop_query()'>
+                    <i style="font-weight: bold;font-size: 20px;color: white" class="el-icon-loading"></i>
+                </el-button>
+                <el-button v-else id="sendBtn" @click='query()'>
+                    <i style="font-weight: bold;font-size: 20px;color: white" class="el-icon-top"></i>
+                </el-button>
+            </div>
+        </div>
+    </div>
+    <div id="detailsBlock">
+        <div id="detailsHead">
+            <p id="details_head_content" style="margin: 0">详情</p>
+        </div>
+        <div id="detailsList">
+            <div v-for="(item, idx) in res_list"
+                 class="collapse_item_block">
+                <div class="collapse_item_head" id="'collapse_item_'+idx" @click="collapse_item(idx)">
+                    <div class="collapse_item_head_content">
+                        {[ item.head ]}
+                    </div>
+                    <i v-if="expand_item === idx || idx == active_block" class="el-icon-arrow-down el-icon--right"></i>
+                    <i v-else="expand_item === idx" class="el-icon-arrow-right el-icon--right"></i>
+                </div>
+                <div class="collapse_item_body" v-if="expand_item === idx || idx == active_block">
+                    <div v-html="item.content" style="color: #797979; font-size: 14px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const vm = new Vue({
+        el: '#root',
+        delimiters: ['{[', ']}'],
+        mounted() {
+            document.getElementById("inputArea").addEventListener('keydown', this.checkEnter);
+        },
+        data: {
+            active_block: 0, // 默认展开第一个
+            queryStr: '',
+            resize: 'none',
+            modelSelected: 'Baichuan',
+            showModels: false,
+            expand_item: -1,
+            res_list: [],
+            waiting_ans: false,
+            abortController: null
+        },
+        methods: {
+            collapse_item(idx) {
+                this.active_block = -1
+                if (idx === this.expand_item) {
+                    this.expand_item = -1;
+                } else {
+                    this.expand_item = idx;
+                }
+            },
+            showOpt(event) {
+                console.log("isShow")
+                this.showModels = !this.showModels;
+            },
+            selectModel(item) {
+                this.showModels = false;
+                if (item !== "Baichuan" && item !== "ChatGLM") {
+                    this.$message({
+                        message: '该模型尚未接入',
+                        type: 'warning',
+                        customClass: 'custom-message'
+                    })
+                    return;
+                }
+                if (this.modelSelected !== item) {
+                    this.modelSelected = item;
+                    this.$message({
+                        message: '切换成功',
+                        type: 'success',
+                        customClass: 'custom-message'
+                    });
+                }
+            },
+            warnBlank() {
+                this.$message({
+                    message: '不能发送空消息',
+                    type: 'info',
+                    customClass: 'custom-message'
+                });
+            },
+            async query() {
+                this.abortController = new AbortController();
+                let chatHistory = document.getElementById("chatHistory");
+                if (this.queryStr === "") {
+                    vm.warnBlank()
+                    return;
+                }
+                // 当前时间
+                const date = new Date();
+                const hour = date.getHours();
+                const mm = date.getMinutes();
+                const time = hour + ':' + mm;
+
+                // 提问内容
+                const queryBody = '<div class="chat_right_item_2 ">' +
+                    '<div class="chat_right_time chat_time">' + time + '</div>' +
+                    '<div class="chat_right_content">' + this.queryStr +
+                    '</div>' +
+                    '</div>' +
+                    '<img class="chat_avatar" src="/static/resource/pics/user.jpg"></img>'
+                // '<div class="chat_right_item_1 ">我</div>';
+
+                const queryBlock = document.createElement("div");
+                queryBlock.classList.add("chat_right");
+                queryBlock.innerHTML = queryBody;
+                chatHistory.append(queryBlock);
+
+                // 更新滚动条
+                let chatArea = document.getElementById("chatArea");
+                chatArea.scrollTop = chatArea.scrollHeight;
+
+                // 加载中
+                this.waiting_ans = true;
+                let queryStrTmp = this.queryStr;
+                this.queryStr = "";
+                let that = this;
+
+                // TODO：修改请求路径
+                await axios.get('/queryLLM_raw', {
+                {#await axios.get('/queryLLM', {#}
+                    signal: this.abortController.signal,
+                    timeout: 10000,
+                    params: {query: queryStrTmp}
+                })
+                    .then(response => {
+                        this.active_block = 0
+                        let ans = response.data
+                        console.log(ans)
+                        this.res_list = ans.res_list
+                        let keywords = ans.keywords
+                        let main_str = ans.main_str
+                        console.log(response.data)
+
+                        // 生成关键词
+                        let keyword_html = ''
+                        if (keywords.length !== 0) {
+                            keyword_html += '<div class="divider"></div>'
+                        }
+                        keyword_html += '<div style="display: flex;">'
+                        for (let idx in keywords) {
+                            keyword_html += '<div class="keyword" style="margin-right: 10px; white-space: nowrap">' + keywords[idx] + '</div>'
+                        }
+                        keyword_html += '</div>'
+
+                        // 生成回答主体
+                        let ansStr = "未生成有效答案，请换一种提问方式";
+                        if (main_str !== '' && main_str !== undefined) {
+                            ansStr = main_str
+                        }
+                        const ansBody = '<img class="chat_avatar" src="/static/resource/pics/machine.png"></img>' +
+                            '<div class="chat_left_item_2">' +
+                            '<div class="chat_time">' + time + '</div>' +
+                            '<div class="chat_left_content">' + ansStr + keyword_html + '</div>' +
+                            '</div>'
+
+                        const ansBlock = document.createElement("div");
+                        ansBlock.classList.add("chat_left");
+                        ansBlock.classList.add("clearfix");
+                        ansBlock.innerHTML = ansBody;
+                        chatHistory.append(ansBlock);
+                        // 更新滚动条
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    })
+                    .catch(error => {
+                        if (error.message.includes("timeout")) {
+                            that.$message({
+                                message: '请求超时，请稍后重试',
+                                type: 'warning',
+                                customClass: 'custom-message'
+                            });
+                        } else {
+                            that.$message({
+                                message: '未知错误，请稍后重试',
+                                type: 'warning',
+                                customClass: 'custom-message'
+                            });
+                        }
+                    })
+                    .finally(() => {
+                        // 按钮恢复
+                        this.waiting_ans = false;
+                    })
+            },
+            async checkEnter(event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault(); // 阻止默认的 Enter 键行为
+                    await this.query();
+                } else if (event.key === "Enter" && event.shiftKey) {
+                    // 插入换行符
+                    var input = document.getElementById("myInput");
+                    var cursorPosition = input.selectionStart;
+                    var textBefore = input.value.substring(0, cursorPosition);
+                    var textAfter = input.value.substring(cursorPosition);
+                    input.value = textBefore + "\n" + textAfter;
+                    // 阻止默认的 Enter 键行为
+                    event.preventDefault();
+                }
+            },
+            stop_query() {
+                this.abortController.abort();
+                this.waiting_ans = false;
+            }
+        }
+    })
+</script>
+</body>
+</html>

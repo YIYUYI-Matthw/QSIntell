@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业智能问答</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.css">
+</head>
+<style>
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    #main_body {
+        border: 1px solid #0058ff;
+    }
+
+    .chat_commento {
+        width: 55%;
+        height: calc(100% - 55px);
+        border-radius: 10px;
+        border: 2px solid #f4f5f7;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .clearfix::after {
+        content: "";
+        display: block;
+        clear: both;
+        width: 0;
+        height: 0;
+        line-height: 0;
+        visibility: hidden;
+    }
+
+    /* top */
+    .chat_top {
+        width: 80%;
+        height: 50px;
+    {#border-top-left-radius: 10px;#}{#border-top-right-radius: 10px;#} padding-left: 20px;
+        font-size: 20px;
+        line-height: 50px;
+        box-sizing: border-box;
+        font-weight: 550;
+    }
+
+    /* middle */
+    .chat_middle {
+        width: 600px;
+        height: 85%;
+        position: relative;
+        box-sizing: border-box;
+        overflow: auto;
+        border-width: 0px;
+    }
+
+    /* foot */
+    .chat_foot {
+        width: 600px;
+        flex: 1;
+        max-height: 15%;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        position: relative;
+    }
+
+    .chat_context {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        outline: none;
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        border-width: 0px;
+        padding: 16px;
+    }
+
+    .chat_commit {
+        width: 80px;
+        height: 30px;
+        color: white;
+        background-color: #4F7cff;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 5px;
+        position: absolute;
+        right: 10px;
+        bottom: 20px;
+        margin-right: 10px;
+    }
+
+    .chat_context {
+        resize: none;
+    }
+
+    .chat_context::placeholder {
+        color: rgb(153, 153, 153);
+        font-weight: 500 k;
+    }
+
+    .line {
+        width: 100%;
+        border-top: 1px;
+        border-color: #f4f5f7;
+        border-style: solid;
+    }
+
+    .chat_time {
+        color: grey;
+    }
+
+    .keyword {
+        border-radius: 5px;
+        border: 1px solid rgb(223, 237, 255);
+        padding: 2px;
+        background: #ffffff;
+        color: #3f9ffc;
+    }
+
+    .doc_list {
+        list-style-type: none;
+    }
+
+    .doc_list > li {
+        color: #3f9ffc;
+    }
+
+    .doc_list > li > a {
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+</style>
+<!--用户对话框-->
+<style>
+    * {
+        font-size: 15px;
+    }
+
+    .chat_right {
+        width: 100%;
+        height: 80px;
+        margin-top: 20px;
+        /*子元素*/
+        display: flex;
+        justify-content: right;
+    }
+
+    .chat_right_item_1 {
+        width: 50px;
+        height: 50px;
+        background-color: #4459AB;
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        text-align: center;
+        line-height: 50px;
+        color: white;
+        border-radius: 25px;
+    }
+
+    .chat_right_item_2 {
+        width: 75%;
+        margin-top: 10px;
+        margin-right: 10px;
+    }
+
+    .chat_right_time {
+        width: 100%;
+        text-align: right;
+    }
+
+    .chat_right_content {
+        float: right;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 10px;
+        border-top-right-radius: 0px;
+        background-color: #2473c3;
+        color: white;
+        text-align: justify;
+    }
+</style>
+<!--客服对话框-->
+<style>
+    .chat_left {
+        width: 100%;
+        margin-top: 20px;
+        /*子元素*/
+        display: flex;
+        justify-content: left;
+    }
+
+    .chat_left_item_1 {
+        width: 50px;
+        height: 50px;
+        background-color: #4459AB;
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        text-align: center;
+        line-height: 50px;
+        color: white;
+        border-radius: 25px;
+    }
+
+    .chat_left_item_2 {
+        width: 75%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .divider {
+        border-top: 1px solid #a6cdff; /* 使用1像素的实线作为分割线，可以根据需要修改颜色和粗细 */
+        margin-top: 5px; /* 如果需要一些间距，可以使用 margin-top 调整 */
+        margin-bottom: 5px; /* 如果需要一些间距，可以使用 margin-top 调整 */
+    }
+
+    .chat_left_item_2 .chat_left_content {
+        padding: 15px;
+        margin-top: 10px;
+        background-color: rgb(247, 250, 255);
+        display: inline-block;
+        border-radius: 10px;
+        border-top-left-radius: 0px;
+        text-align: justify;
+    }
+</style>
+<!--详情页-->
+<style>
+    .details {
+        width: 25%;
+        height: calc(100% - 55px);
+        border-radius: 10px;
+        border: 2px solid #f4f5f7;
+    }
+
+    .details_head {
+        width: 80%;
+        height: 50px;
+        padding-left: 20px;
+        font-size: 20px;
+        line-height: 50px;
+        box-sizing: border-box;
+        font-weight: 550;
+    }
+
+    .details_content {
+        overflow-y: auto;
+    }
+</style>
+<body style="display: flex;align-items: center;justify-content: center;width: 100vw; height: 100vh;">
+<div id="main_body" style="display: flex;flex-direction:column;align-items: center;justify-content: center;height: 90%">
+    <!-- top -->
+    <div class="chat_top">
+        企业智能问答
+    </div>
+    <div style="display: flex;justify-content: center;">
+        <div class="chat_commento">
+            <!-- middle -->
+            <div class="chat_middle" id="chat_middle_item">
+                <!-- 左边 -->
+                <div class="chat_right">
+                    <div class="chat_right_item_2 ">
+                        <div class="chat_right_time chat_time">18:59</div>
+                        <div class="chat_right_content">
+                            我部门想采购办公用器，是什么流程?
+                        </div>
+                    </div>
+                </div>
+                <!--右边 -->
+                <div class="chat_left clearfix">
+                    <img class="chat_left_item_1" src="/static/resource/pics/img.png">
+                    <div class="chat_left_item_2">
+                        <div class="chat_time">18:57</div>
+                        <div class="chat_left_content">
+                            你好，视据《北京北控毫光大数据服的有限公司办公局及管理力法(动行》》的关内者，办公用品用为的范爱划下:各基原涨本居”办公用品用靠义，每月25-20日，写好庆月的《办公用显要家中债南》附件2。经器公责人审否后操综合管理力公室
+                            惊合管遭办公空校强各能门上报的办公用品黄求，整理感成阳作为，经京合管理办公室主任和财努负走人审批、总经建苦授后，由流产财男周配合女魔果势任务了。
+                            <ul class="doc_list">
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                                <li class="bi bi-file-text">
+                                    <a href="#" target="_blank">《办公用品月应采聚清单》</a>
+                                </li>
+                            </ul>
+                            <div class="divider"></div>
+                            <div style="display: flex; justify-content: space-between">
+                                <div class="keyword">关键字1</div>
+                                <div class="keyword">关键字2</div>
+                                <div class="keyword">关键字3</div>
+                                <div class="keyword">关键字4</div>
+                                <div class="keyword">关键字5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- line -->
+            <div class="line"></div>
+            <!-- foot -->
+            <div class="chat_foot">
+                <!-- context -->
+                <textarea class="chat_context" id="chat_context_item" cols="30" rows="10" placeholder="请输入"
+                          onkeydown="checkEnter(event)"></textarea>
+                <div class="chat_commit" id="query_button" onclick="query()">发送</div>
+            </div>
+        </div>
+        <div class="details">
+            <div class="details_head" style="color: #3f9ffc;">
+                详情
+            </div>
+            <div class="details_content" style="padding: 20px">
+                <div style="margin-bottom: 10px">
+                    1:北京北控难光大鼓控险场有用办公用员置适力法《L行》董二条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    1:北京北控难光大鼓控险场有用办公用员置适力法《L行》董二条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    1:北京北控难光大鼓控险场有用办公用员置适力法《L行》董二条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    2: 北北控理光大鼓欺爱母有限公司 办公用品管理办法《(试行) 黄六条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    :北京北控曝元大鼓控授设有限公司 办公用品管理力话(团行) 第七条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    4:北京北控难光大鼓就股场有限公司 办公用品首理力法《(成厅) 第七条(二)
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    4:北京北控难光大鼓就股场有限公司 办公用品首理力法《(成厅) 第七条(二)
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    5:北李北控理光大数款股有用公司 办公用品管活办法《L行》 能九条
+                </div>
+                <div class="line" style="margin-bottom: 10px;"></div>
+                <div style="margin-bottom: 10px">
+                    6:提北控重元大鼓察授行有限公司 办公用局首理办法(试行) 第十条
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // 聊天框
+    const chatHistory = document.getElementById("chat_middle_item");
+
+    function checkEnter(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // 阻止默认的 Enter 键行为
+            query();
+        } else if (event.key === "Enter" && event.shiftKey) {
+            // 插入换行符
+            var input = document.getElementById("myInput");
+            var cursorPosition = input.selectionStart;
+            var textBefore = input.value.substring(0, cursorPosition);
+            var textAfter = input.value.substring(cursorPosition);
+            input.value = textBefore + "\n" + textAfter;
+            // 阻止默认的 Enter 键行为
+            event.preventDefault();
+        }
+    }
+
+    function query() {
+        // 发送内容
+        const message = document.getElementById("chat_context_item");
+        const str = message.value;
+        // 当前时间
+        const date = new Date();
+        const hour = date.getHours();
+        const mm = date.getMinutes();
+        const time = hour + ':' + mm;
+        // 生成div
+        const queryBody = '<div class="chat_right_item_2 ">' +
+            '<div class="chat_right_time">' + time + '</div>' +
+            '<div class="chat_right_content">' + str +
+            '</div>' +
+            '</div>'
+        // '<div class="chat_right_item_1 ">我</div>';
+        const queryBlock = document.createElement("div");
+        queryBlock.classList.add("chat_right");
+        queryBlock.innerHTML = queryBody;
+        chatHistory.append(queryBlock);
+        // 预设回答
+        let ansStr = "尚未录入相关内容，请等待更新";
+        let head = "-";
+        if (str.includes("收费标准")) {
+            head = "收费标准"
+            ansStr = "档案收费标准经过充分市场研究和合理成本考量，确保提供高质量服务。详细费用可在我们的官方网站或客服处获取，以确保透明度和客户满意度。"
+        }
+        if (str.includes("投诉")) {
+            head = "投诉流程"
+            ansStr = "我们重视客户意见。客户可通过拨打热线、填写在线投诉表格或发送邮件提出投诉。我们将尽快回应，进行调查和改进，确保客户关怀及时到位。"
+        }
+        const ansBody = '<img class="chat_left_item_1" src="/static/resource/pics/img.png">' +
+            '<div class="chat_left_item_2">' +
+            '<div class="chat_time">' + time + '</div>' +
+            '<div class="chat_left_content">' + ansStr + '</div>' +
+            '</div>'
+        const ansBlock = document.createElement("div");
+        ansBlock.classList.add("chat_left");
+        ansBlock.classList.add("clearfix");
+        ansBlock.innerHTML = ansBody;
+        console.log("东西呢")
+        console.log(ansBlock)
+        chatHistory.append(ansBlock);
+        // 更新滚动条
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        message.value = ""
+    }
+</script>
+</body>
+</html>
